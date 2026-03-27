@@ -17,14 +17,14 @@ export default function Home() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50 text-slate-500">
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-slate-50 text-slate-500">
         Carregando aplicativo...
       </div>
     );
   }
 
   return (
-    <main className="h-screen w-full max-w-md mx-auto bg-white shadow-xl overflow-hidden flex flex-col relative text-slate-900">
+    <main className="h-[100dvh] w-full max-w-md mx-auto bg-white shadow-xl overflow-hidden flex flex-col relative text-slate-900">
       
       {stage !== "history" && (
         <header className="bg-blue-600 text-white p-4 shadow-sm z-10 relative">
