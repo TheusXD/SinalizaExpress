@@ -24,10 +24,10 @@ export default function Home() {
   }
 
   return (
-    <main className="h-[100dvh] w-full max-w-md mx-auto bg-white shadow-xl overflow-hidden flex flex-col relative text-slate-900">
+    <main className="h-[100dvh] w-full max-w-md mx-auto bg-white shadow-xl overflow-y-auto overflow-x-hidden flex flex-col relative text-slate-900">
       
       {stage !== "history" && (
-        <header className="bg-blue-600 text-white p-4 shadow-sm z-10 relative">
+        <header className="bg-blue-600 text-white p-4 shadow-sm z-10 relative shrink-0">
           <div className="flex justify-between items-center mb-1">
             <h1 className="text-xl font-black tracking-wide">
               Sinaliza<span className="text-blue-200">Express</span>
@@ -59,7 +59,7 @@ export default function Home() {
         </header>
       )}
 
-      <div className="flex-1 overflow-hidden relative bg-slate-50">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden relative bg-slate-50 flex flex-col">
         {stage === "map" && (
           <MapView 
             location={state.location}

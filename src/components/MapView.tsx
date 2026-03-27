@@ -21,7 +21,7 @@ interface MapViewProps {
 
 export default function MapView({ location, onLocationSelect, onNext }: MapViewProps) {
   return (
-    <div className="flex flex-col h-full items-center p-4">
+    <div className="flex flex-col min-h-full items-center p-4 pb-24">
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm p-4 border border-slate-100 flex-grow flex flex-col">
         <h2 className="text-xl font-bold text-slate-800 mb-2">1. Local da Obra</h2>
         <p className="text-sm text-slate-500 mb-4">
