@@ -1,13 +1,14 @@
-import { ArrowLeft, Trash2, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Trash2, Calendar, MapPin, PackageCheck } from "lucide-react";
 import type { HistoryItem } from "@/types";
 
 interface HistoryViewProps {
   history: HistoryItem[];
   onRemove: (id: string) => void;
+  onReturnInventory: (id: string) => Promise<void>;
   onBack: () => void;
 }
 
-export default function HistoryView({ history, onRemove, onBack }: HistoryViewProps) {
+export default function HistoryView({ history, onRemove, onReturnInventory, onBack }: HistoryViewProps) {
   return (
     <div className="flex flex-col h-full bg-slate-50 p-4 overflow-y-auto pb-24">
       <div className="flex items-center gap-3 mb-6">
@@ -72,6 +73,26 @@ export default function HistoryView({ history, onRemove, onBack }: HistoryViewPr
                     <img src={item.croqui} alt="Croqui da Obra" className="w-full h-auto object-cover max-h-48" />
                   </div>
                 )}
+
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  {item.returnedAt ? (
+                    <div className="w-full py-2 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-lg flex justify-center items-center">
+                      ✓ Devolvido em {new Date(item.returnedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        if (confirm("Confirmar devolução ao estoque das placas usadas nesta obra?")) {
+                          await onReturnInventory(item.id);
+                        }
+                      }}
+                      className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition"
+                    >
+                      <PackageCheck className="w-4 h-4" />
+                      Devolver sinalização
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

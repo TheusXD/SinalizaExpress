@@ -22,6 +22,13 @@ export interface ChecklistData {
   observations: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  name: string;
+  totalStock: number;
+  inUse: number;
+}
+
 export interface HistoryItem {
   id: string;
   date: string;
@@ -29,6 +36,8 @@ export interface HistoryItem {
   checklist: ChecklistData;
   responsible: string;
   croqui?: string;
+  inventorySnapshot?: InventoryItem[];
+  returnedAt?: string;
 }
 
 export interface PwaState {

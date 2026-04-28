@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import localforage from "localforage";
-import type { PwaState, LocationData, ChecklistData, CustomSign, HistoryItem } from "@/types";
+import type { PwaState, LocationData, ChecklistData, CustomSign, HistoryItem, InventoryItem, SignageItem } from "@/types";
 
 const STORAGE_KEY = "@controle_placas_state";
 
@@ -39,12 +39,16 @@ const initialState: PwaState = {
 export function useAppStore() {
   const [state, setState] = useState<PwaState>(initialState);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load history from localForage
+  // Load history and inventory from localForage
   useEffect(() => {
     localforage.getItem("sinaliza_history").then((val) => {
       if (val) setHistory(val as HistoryItem[]);
+    });
+    localforage.getItem("sinaliza_inventory").then((val) => {
+      if (val) setInventory(val as InventoryItem[]);
     });
   }, []);
 
@@ -157,6 +161,115 @@ export function useAppStore() {
     }));
   };
 
+  const upsertInventoryItem = async (id: string, name: string, totalStock: number) => {
+    const newInventory = [...inventory];
+    const existingIndex = newInventory.findIndex(item => item.id === id);
+
+    if (existingIndex !== -1) {
+      const existing = newInventory[existingIndex];
+      // never reduce below inUse
+      const updatedStock = Math.max(existing.inUse, totalStock);
+      newInventory[existingIndex] = { ...existing, name, totalStock: updatedStock };
+    } else {
+      newInventory.push({ id, name, totalStock, inUse: 0 });
+    }
+
+    setInventory(newInventory);
+    await localforage.setItem("sinaliza_inventory", newInventory);
+  };
+
+  const removeInventoryItem = async (id: string) => {
+    const item = inventory.find(i => i.id === id);
+    if (item && item.inUse > 0) {
+      return false; // blocks removal
+    }
+    const newInventory = inventory.filter(i => i.id !== id);
+    setInventory(newInventory);
+    await localforage.setItem("sinaliza_inventory", newInventory);
+    return true;
+  };
+
+  const getAvailable = (id: string): number => {
+    const item = inventory.find(i => i.id === id);
+    if (!item) return Infinity;
+    return item.totalStock - item.inUse;
+  };
+
+  const commitChecklistToInventory = async (items: SignageItem[]) => {
+    const newInventory = [...inventory];
+    let hasChanges = false;
+
+    // Check availability first
+    for (const item of items) {
+      if (item.quantity > 0) {
+        const invItem = newInventory.find(i => i.id === item.id);
+        if (invItem) {
+          const available = invItem.totalStock - invItem.inUse;
+          if (available < item.quantity) {
+            throw new Error(`Estoque insuficiente para: ${item.name}. Disponível: ${available}, Solicitado: ${item.quantity}`);
+          }
+        }
+      }
+    }
+
+    // Apply changes
+    for (const item of items) {
+      if (item.quantity > 0) {
+        const invIndex = newInventory.findIndex(i => i.id === item.id);
+        if (invIndex !== -1) {
+          newInventory[invIndex] = {
+            ...newInventory[invIndex],
+            inUse: newInventory[invIndex].inUse + item.quantity
+          };
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      setInventory(newInventory);
+      await localforage.setItem("sinaliza_inventory", newInventory);
+    }
+    return newInventory;
+  };
+
+  const returnInventory = async (historyItemId: string) => {
+    const historyItemIndex = history.findIndex(h => h.id === historyItemId);
+    if (historyItemIndex === -1) return;
+    const historyItem = history[historyItemIndex];
+
+    if (historyItem.returnedAt) return; // already returned
+
+    const newInventory = [...inventory];
+    let hasChanges = false;
+
+    historyItem.checklist.items.forEach(item => {
+      if (item.quantity > 0) {
+        const invIndex = newInventory.findIndex(i => i.id === item.id);
+        if (invIndex !== -1) {
+          newInventory[invIndex] = {
+            ...newInventory[invIndex],
+            inUse: Math.max(0, newInventory[invIndex].inUse - item.quantity)
+          };
+          hasChanges = true;
+        }
+      }
+    });
+
+    if (hasChanges) {
+      setInventory(newInventory);
+      await localforage.setItem("sinaliza_inventory", newInventory);
+    }
+
+    const newHistory = [...history];
+    newHistory[historyItemIndex] = {
+      ...historyItem,
+      returnedAt: new Date().toISOString()
+    };
+    setHistory(newHistory);
+    await localforage.setItem("sinaliza_history", newHistory);
+  };
+
   const clearState = () => {
     const newState = { ...initialState, customSigns: state.customSigns, date: new Date().toISOString() };
     setState(newState);
@@ -164,6 +277,14 @@ export function useAppStore() {
   };
 
   const saveToHistory = async () => {
+    // 1. Commit inventory changes
+    let currentInventorySnapshot = inventory;
+    try {
+      currentInventorySnapshot = await commitChecklistToInventory(state.checklist.items);
+    } catch (error) {
+      throw error; // Let the caller handle it
+    }
+
     const newItem: HistoryItem = {
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
@@ -171,6 +292,7 @@ export function useAppStore() {
       checklist: state.checklist,
       croqui: state.croqui,
       responsible: state.responsible,
+      inventorySnapshot: [...currentInventorySnapshot],
     };
     const newHistory = [newItem, ...history];
     setHistory(newHistory);
@@ -186,6 +308,7 @@ export function useAppStore() {
   return {
     state,
     history,
+    inventory,
     isLoaded,
     actions: {
       setLocation,
@@ -198,6 +321,11 @@ export function useAppStore() {
       saveToHistory,
       removeFromHistory,
       clearState,
+      upsertInventoryItem,
+      removeInventoryItem,
+      getAvailable,
+      commitChecklistToInventory,
+      returnInventory,
     },
   };
 }

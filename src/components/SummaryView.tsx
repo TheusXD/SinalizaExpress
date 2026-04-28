@@ -13,6 +13,7 @@ interface SummaryViewProps {
 export default function SummaryView({ state, onUpdateResponsible, onSaveHistory, onReset, onBack }: SummaryViewProps) {
   const { location, checklist, responsible } = state;
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const selectedItems = checklist.items.filter(item => item.quantity > 0);
 
   const generateWhatsAppLink = () => {
@@ -149,12 +150,28 @@ export default function SummaryView({ state, onUpdateResponsible, onSaveHistory,
 
         <div className="flex gap-2 w-full mt-2">
           {!saved ? (
-             <button
-               onClick={async () => { await onSaveHistory(); setSaved(true); }}
-               className="flex-1 py-3 bg-blue-100 text-blue-700 font-bold rounded-xl flex items-center justify-center transition hover:bg-blue-200"
-             >
-               Salvar no Histórico
-             </button>
+             <div className="flex flex-col w-full flex-1 gap-2">
+               {saveError && (
+                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-xl flex items-start gap-2 leading-tight">
+                   <span className="shrink-0 mt-0.5">⚠️</span>
+                   <span>{saveError}</span>
+                 </div>
+               )}
+               <button
+                 onClick={async () => { 
+                   try {
+                     setSaveError(null);
+                     await onSaveHistory(); 
+                     setSaved(true); 
+                   } catch (err: any) {
+                     setSaveError(err.message || "Erro ao salvar no histórico.");
+                   }
+                 }}
+                 className="w-full py-3 bg-blue-100 text-blue-700 font-bold rounded-xl flex items-center justify-center transition hover:bg-blue-200"
+               >
+                 Salvar no Histórico
+               </button>
+             </div>
           ) : (
              <div className="flex-1 py-3 bg-slate-100 text-slate-500 font-bold rounded-xl flex items-center justify-center">
                Salvo ✓

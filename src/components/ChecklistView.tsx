@@ -1,12 +1,13 @@
 import { useState } from "react";
-import type { SignageItem, CustomSign } from "@/types";
-import { Plus, Minus, Trash2, Settings2 } from "lucide-react";
+import type { SignageItem, CustomSign, InventoryItem } from "@/types";
+import { Plus, Minus, Settings2, AlertTriangle } from "lucide-react";
 import CustomSignsManager from "./CustomSignsManager";
 
 interface ChecklistViewProps {
   items: SignageItem[];
   observations: string;
   customSigns: CustomSign[];
+  inventory: InventoryItem[];
   addCustomSign: (sign: Omit<CustomSign, "id">) => void;
   removeCustomSign: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
@@ -19,6 +20,7 @@ export default function ChecklistView({
   items,
   observations,
   customSigns,
+  inventory,
   addCustomSign,
   removeCustomSign,
   onUpdateQuantity,
@@ -57,48 +59,66 @@ export default function ChecklistView({
       </div>
 
       <div className="space-y-3 mb-6">
-        {items.map((item) => (
-          <div 
-            key={item.id} 
-            className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-100"
-          >
-            <div className="flex-1">
-              <span className="font-semibold text-slate-700 flex items-center gap-2">
-                {item.name}
-                {item.isCustom && (
-                  <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                    Custom
-                  </span>
+        {items.map((item) => {
+          const invItem = inventory.find(i => i.id === item.id);
+          const isControlled = !!invItem;
+          const available = isControlled ? invItem.totalStock - invItem.inUse : Infinity;
+          const overLimit = isControlled && item.quantity > available;
+
+          return (
+            <div 
+              key={item.id} 
+              className={`flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border ${overLimit ? 'border-rose-300 bg-rose-50' : 'border-slate-100'}`}
+            >
+              <div className="flex-1">
+                <span className="font-semibold text-slate-700 flex items-center gap-2">
+                  {item.name}
+                  {item.isCustom && (
+                    <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      Custom
+                    </span>
+                  )}
+                </span>
+                {isControlled && (
+                  <p className="text-xs text-slate-500 mt-1 font-medium">
+                    Disponível: {available}
+                  </p>
                 )}
-              </span>
-            </div>
+              </div>
 
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
-                disabled={item.quantity === 0}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition
-                  ${item.quantity > 0 
-                    ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' 
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  }`}
-              >
-                <Minus className="w-5 h-5" />
-              </button>
-              
-              <span className="w-6 text-center text-lg font-bold text-slate-800">
-                {item.quantity}
-              </span>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                  disabled={item.quantity === 0}
+                  className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition
+                    ${item.quantity > 0 
+                      ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' 
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    }`}
+                >
+                  <Minus className="w-5 h-5" />
+                </button>
+                
+                <span className={`w-6 flex shrink-0 justify-center text-lg font-bold ${overLimit ? 'text-rose-600' : 'text-slate-800'} relative`}>
+                  {item.quantity}
+                  {overLimit && <AlertTriangle className="w-3 h-3 absolute -top-2 -right-3 text-rose-500" />}
+                </span>
 
-              <button
-                onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center transition"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
+                <button
+                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  disabled={isControlled && item.quantity >= available}
+                  className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition
+                    ${isControlled && item.quantity >= available 
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    }`}
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mb-6">

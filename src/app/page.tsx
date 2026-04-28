@@ -7,12 +7,13 @@ import ChecklistView from "@/components/ChecklistView";
 import CroquiView from "@/components/CroquiView";
 import SummaryView from "@/components/SummaryView";
 import HistoryView from "@/components/HistoryView";
-import { ClipboardList } from "lucide-react";
+import InventoryManager from "@/components/InventoryManager";
+import { ClipboardList, Package } from "lucide-react";
 
-type ViewStage = "map" | "checklist" | "croqui" | "summary" | "history";
+type ViewStage = "map" | "checklist" | "croqui" | "summary" | "history" | "inventory";
 
 export default function Home() {
-  const { state, history, isLoaded, actions } = useAppStore();
+  const { state, history, inventory, isLoaded, actions } = useAppStore();
   const [stage, setStage] = useState<ViewStage>("map");
 
   if (!isLoaded) {
@@ -26,22 +27,31 @@ export default function Home() {
   return (
     <main className="h-[100dvh] w-full max-w-md mx-auto bg-white shadow-xl overflow-y-auto overflow-x-hidden flex flex-col relative text-slate-900">
       
-      {stage !== "history" && (
+      {stage !== "history" && stage !== "inventory" && (
         <header className="bg-blue-600 text-white p-4 shadow-sm z-10 relative shrink-0">
           <div className="flex justify-between items-center mb-1">
             <h1 className="text-xl font-black tracking-wide">
               Sinaliza<span className="text-blue-200">Express</span>
             </h1>
-            <button
-               onClick={() => setStage("history")}
-               className="p-2 rounded-full hover:bg-blue-700 transition relative"
-               title="Ver Histórico de Obras"
-            >
-              <ClipboardList className="w-6 h-6" />
-              {history.length > 0 && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-blue-600"></span>
-              )}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                 onClick={() => setStage("inventory")}
+                 className="p-2 rounded-full hover:bg-blue-700 transition"
+                 title="Gerenciar Estoque"
+              >
+                <Package className="w-6 h-6" />
+              </button>
+              <button
+                 onClick={() => setStage("history")}
+                 className="p-2 rounded-full hover:bg-blue-700 transition relative"
+                 title="Ver Histórico de Obras"
+              >
+                <ClipboardList className="w-6 h-6" />
+                {history.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-blue-600"></span>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-between text-[10px] font-medium text-blue-200 mt-2 px-1">
@@ -73,6 +83,7 @@ export default function Home() {
             items={state.checklist.items}
             observations={state.checklist.observations}
             customSigns={state.customSigns}
+            inventory={inventory}
             addCustomSign={actions.addCustomSign}
             removeCustomSign={actions.removeCustomSign}
             onUpdateQuantity={actions.updateChecklistItem}
@@ -105,6 +116,16 @@ export default function Home() {
           <HistoryView
             history={history}
             onRemove={actions.removeFromHistory}
+            onReturnInventory={actions.returnInventory}
+            onBack={() => setStage("map")}
+          />
+        )}
+
+        {stage === "inventory" && (
+          <InventoryManager
+            inventory={inventory}
+            onUpsert={actions.upsertInventoryItem}
+            onRemove={actions.removeInventoryItem}
             onBack={() => setStage("map")}
           />
         )}

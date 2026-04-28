@@ -50,7 +50,7 @@ const TOOLS: { id: ElementType | "select"; label: string; icon: any }[] = [
 
 export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiViewProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
-  const editorActionsRef = useRef<{ undo: () => void; clear: () => void; deleteSelected: () => void } | null>(null);
+  const editorActionsRef = useRef<{ undo: () => void; clear: () => void; deleteSelected: () => void; clearSelection: () => void } | null>(null);
   
   const [currentTool, setCurrentTool] = useState<ElementType | "select">("select");
 
