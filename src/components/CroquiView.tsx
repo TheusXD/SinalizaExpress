@@ -146,17 +146,16 @@ export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiVie
           <button 
             onClick={() => {
               if (stageRef.current) {
-                // Clear selection natively in konva before export by faking empty node
-                editorActionsRef.current?.undo(); // No, we just export
-                // Better approach to hide transformer: 
-                // Since this requires internal access, we can assume the user clicks the button so selection is dropped, 
-                // OR we can export without selection. Konva transformer disables automatically if we export a clone, or we just trust the component drops focus.
-                const uri = stageRef.current.toDataURL({ pixelRatio: 2 });
-                onSave(uri);
+                editorActionsRef.current?.clearSelection();
+                setTimeout(() => {
+                  const uri = stageRef.current?.toDataURL({ pixelRatio: 2 }) || null;
+                  onSave(uri);
+                  onNext();
+                }, 50);
               } else {
                 onSave(null);
+                onNext();
               }
-              onNext();
             }} 
             className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition"
           >

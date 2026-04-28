@@ -66,6 +66,12 @@ export default function HistoryView({ history, onRemove, onBack }: HistoryViewPr
                 <div className="mt-2 text-sm font-medium text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
                   {itemCount} placas/equipamentos registrados.
                 </div>
+
+                {item.croqui && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-slate-200">
+                    <img src={item.croqui} alt="Croqui da Obra" className="w-full h-auto object-cover max-h-48" />
+                  </div>
+                )}
               </div>
             );
           })}

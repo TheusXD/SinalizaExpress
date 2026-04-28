@@ -71,7 +71,7 @@ export function useAppStore() {
         setState({
           ...initialState,
           ...parsedState,
-          date: new Date().toISOString(), // Update to current date on user session restore
+          date: parsedState.date || new Date().toISOString(), // Preserve original date
           checklist: {
             ...parsedState.checklist,
             items: mergedItems,
@@ -160,7 +160,7 @@ export function useAppStore() {
   const clearState = () => {
     const newState = { ...initialState, customSigns: state.customSigns, date: new Date().toISOString() };
     setState(newState);
-    localStorage.removeItem(STORAGE_KEY);
+    setTimeout(() => localStorage.removeItem(STORAGE_KEY), 0);
   };
 
   const saveToHistory = async () => {
@@ -169,6 +169,7 @@ export function useAppStore() {
       date: new Date().toISOString(),
       location: state.location,
       checklist: state.checklist,
+      croqui: state.croqui,
       responsible: state.responsible,
     };
     const newHistory = [newItem, ...history];

@@ -28,6 +28,7 @@ export interface HistoryItem {
   location: LocationData | null;
   checklist: ChecklistData;
   responsible: string;
+  croqui?: string;
 }
 
 export interface PwaState {

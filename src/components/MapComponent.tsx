@@ -23,7 +23,10 @@ function AddressSearch({ onSelect }: { onSelect: (loc: LocationData) => void }) 
       setIsLoading(true);
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=br`, {
-          headers: { "Accept-Language": "pt-BR" }
+          headers: { 
+            "Accept-Language": "pt-BR",
+            "User-Agent": "SinalizaExpress/1.0"
+          }
         });
         const data = await res.json();
         setResults(data);
@@ -93,7 +96,12 @@ export default function MapComponent({ location, onLocationSelect }: MapComponen
         onLocationSelect({ lat: latitude, lng: longitude, address: "Buscando endereço..." });
 
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`, {
+            headers: {
+              "Accept-Language": "pt-BR",
+              "User-Agent": "SinalizaExpress/1.0"
+            }
+          });
           const data = await res.json();
           onLocationSelect({ lat: latitude, lng: longitude, address: data.display_name });
         } catch (err) {

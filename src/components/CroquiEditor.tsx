@@ -32,6 +32,7 @@ export interface CroquiEditorProps {
     undo: () => void;
     clear: () => void;
     deleteSelected: () => void;
+    clearSelection: () => void;
   } | null>;
 }
 
@@ -107,6 +108,13 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
           historyRef.current.push(structuredClone(elements));
           setElements(prev => prev.filter(e => e.id !== selectedId));
           setSelectedId(null);
+        }
+      },
+      clearSelection: () => {
+        setSelectedId(null);
+        if (transformerRef.current) {
+          transformerRef.current.nodes([]);
+          transformerRef.current.getLayer()?.batchDraw();
         }
       }
     };
