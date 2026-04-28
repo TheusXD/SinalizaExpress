@@ -7,7 +7,9 @@ import type Konva from "konva";
 export type ElementType =
   | "road-h" | "road-v"
   | "sign-work" | "sign-stop" | "sign-desvio"
-  | "cone" | "barrier" | "worker"
+  | "sign-narrow" | "sign-trench" | "sign-speed" | "sign-info" | "sign-pare-siga"
+  | "cone" | "barrier" | "worker" | "fence" | "tape" | "light"
+  | "truck" | "backhoe" | "trench"
   | "arrow" | "label";
 
 export interface CanvasElement {
@@ -144,6 +146,11 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
         else if (tool === "road-v") { halfW = 19; halfH = 55; }
         else if (tool === "sign-desvio") { halfW = 28; halfH = 15; }
         else if (tool === "barrier") { halfW = 32; halfH = 9; }
+        else if (tool === "fence" || tool === "tape") { halfW = 40; halfH = 5; }
+        else if (tool === "truck") { halfW = 30; halfH = 12; }
+        else if (tool === "backhoe") { halfW = 20; halfH = 10; }
+        else if (tool === "trench") { halfW = 25; halfH = 15; }
+        else if (tool === "sign-info") { halfW = 20; halfH = 15; }
 
         setElements([...elements, { id: `el-${crypto.randomUUID()}`, type: tool as ElementType, x: pos.x - halfW, y: pos.y - halfH }]);
       }
@@ -313,6 +320,89 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
                     <Line points={[-8, 4, -16, 12]} stroke="#111827" strokeWidth={3} />
                     <Line points={[4, 20, 6, 32]} stroke="#111827" strokeWidth={3} />
                     <Line points={[-4, 20, -6, 32]} stroke="#111827" strokeWidth={3} />
+                  </>
+                )}
+                {el.type === "sign-narrow" && (
+                  <>
+                    <RegularPolygon sides={3} radius={22} fill="#f59e0b" stroke="#b45309" strokeWidth={2} />
+                    <Line points={[-6, 10, -6, -2, 0, -8, 0, -14]} stroke="#000" strokeWidth={2} />
+                    <Line points={[6, 10, 6, -2, 0, -8, 0, -14]} stroke="#000" strokeWidth={2} />
+                  </>
+                )}
+                {el.type === "sign-trench" && (
+                  <>
+                    <RegularPolygon sides={3} radius={22} fill="#f59e0b" stroke="#b45309" strokeWidth={2} />
+                    <Line points={[-10, 5, -5, -5, 5, -5, 10, 5]} stroke="#000" strokeWidth={2} />
+                  </>
+                )}
+                {el.type === "sign-speed" && (
+                  <>
+                    <Circle radius={20} fill="#fff" stroke="#ef4444" strokeWidth={5} />
+                    <Text text="40" fontSize={16} fontStyle="bold" fill="#000" offsetX={10} offsetY={8} />
+                  </>
+                )}
+                {el.type === "sign-info" && (
+                  <>
+                    <Rect width={40} height={30} fill="#fff" stroke="#1d4ed8" strokeWidth={2} cornerRadius={2} />
+                    <Text text="OBRA" fontSize={10} fontStyle="bold" fill="#000" offsetX={-6} offsetY={10} />
+                  </>
+                )}
+                {el.type === "sign-pare-siga" && (
+                  <>
+                    <Circle radius={20} fill="#ef4444" stroke="#fff" strokeWidth={2} />
+                    <Text text="PARE" fontSize={10} fontStyle="bold" fill="#fff" offsetX={13} offsetY={5} />
+                  </>
+                )}
+                {el.type === "fence" && (
+                  <>
+                    <Rect width={80} height={10} fill="#f97316" stroke="#c2410c" strokeWidth={1} cornerRadius={1} />
+                    <Line points={[10, 0, 10, 10]} stroke="#fff" strokeWidth={1} />
+                    <Line points={[30, 0, 30, 10]} stroke="#fff" strokeWidth={1} />
+                    <Line points={[50, 0, 50, 10]} stroke="#fff" strokeWidth={1} />
+                    <Line points={[70, 0, 70, 10]} stroke="#fff" strokeWidth={1} />
+                  </>
+                )}
+                {el.type === "tape" && (
+                  <>
+                    <Rect width={80} height={6} fill="#fbbf24" stroke="#d97706" strokeWidth={1} cornerRadius={1} />
+                    <Line points={[10, 0, 15, 6]} stroke="#000" strokeWidth={2} />
+                    <Line points={[30, 0, 35, 6]} stroke="#000" strokeWidth={2} />
+                    <Line points={[50, 0, 55, 6]} stroke="#000" strokeWidth={2} />
+                    <Line points={[70, 0, 75, 6]} stroke="#000" strokeWidth={2} />
+                  </>
+                )}
+                {el.type === "light" && (
+                  <>
+                    <Circle radius={8} fill="#ef4444" stroke="#991b1b" strokeWidth={2} />
+                    <Circle radius={4} fill="#fca5a5" />
+                  </>
+                )}
+                {el.type === "truck" && (
+                  <>
+                    <Rect width={60} height={24} fill="#fbbf24" stroke="#b45309" strokeWidth={2} cornerRadius={4} />
+                    <Rect width={16} height={20} fill="#d1d5db" x={4} y={2} cornerRadius={2} />
+                    <Circle radius={6} fill="#1f2937" x={15} y={0} />
+                    <Circle radius={6} fill="#1f2937" x={45} y={0} />
+                    <Circle radius={6} fill="#1f2937" x={15} y={24} />
+                    <Circle radius={6} fill="#1f2937" x={45} y={24} />
+                  </>
+                )}
+                {el.type === "backhoe" && (
+                  <>
+                    <Rect width={40} height={20} fill="#f59e0b" stroke="#b45309" strokeWidth={2} cornerRadius={3} />
+                    <Rect width={12} height={16} fill="#d1d5db" x={14} y={2} cornerRadius={2} />
+                    <Line points={[40, 10, 50, 10, 55, 18, 60, 18]} stroke="#b45309" strokeWidth={4} />
+                    <Line points={[0, 10, -10, 10, -10, 2]} stroke="#b45309" strokeWidth={4} />
+                    <Circle radius={6} fill="#1f2937" x={10} y={0} />
+                    <Circle radius={8} fill="#1f2937" x={30} y={0} />
+                    <Circle radius={6} fill="#1f2937" x={10} y={20} />
+                    <Circle radius={8} fill="#1f2937" x={30} y={20} />
+                  </>
+                )}
+                {el.type === "trench" && (
+                  <>
+                    <Rect width={50} height={30} fill="#8b5cf6" stroke="#5b21b6" strokeWidth={2} dash={[5, 5]} cornerRadius={4} />
+                    <Text text="VALA" fontSize={10} fontStyle="bold" fill="#5b21b6" offsetX={-10} offsetY={10} />
                   </>
                 )}
               </Group>

@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import type Konva from "konva";
 import type { ElementType } from "./CroquiEditor";
-import { ArrowLeft, Undo, Trash2, MousePointer2, MoveRight, HelpCircle, Triangle, Octagon, RectangleHorizontal, Cone, Baseline, Minus, MoreVertical, Type } from "lucide-react";
+import { ArrowLeft, Undo, Trash2, MousePointer2, MoveRight, HelpCircle, Triangle, Octagon, RectangleHorizontal, Cone, Baseline, Minus, MoreVertical, Type, ArrowRightLeft, Square, AlertTriangle, Lightbulb, Truck, Tractor, Construction } from "lucide-react";
 
 // Dynamic import with SSR disabled
 const CroquiEditor = dynamic(() => import("./CroquiEditor"), { 
@@ -27,11 +27,22 @@ const TOOLS: { id: ElementType | "select"; label: string; icon: any }[] = [
   { id: "select", label: "Selec.", icon: MousePointer2 },
   { id: "road-h", label: "Rua H", icon: Minus },
   { id: "road-v", label: "Rua V", icon: MoreVertical },
-  { id: "sign-work", label: "Placa", icon: Triangle },
-  { id: "sign-stop", label: "Stop", icon: Octagon },
+  { id: "sign-work", label: "Obras", icon: Triangle },
+  { id: "sign-narrow", label: "Estreit.", icon: AlertTriangle },
+  { id: "sign-trench", label: "Vala", icon: AlertTriangle },
+  { id: "sign-speed", label: "Veloc.", icon: Octagon },
+  { id: "sign-stop", label: "Pare", icon: Octagon },
+  { id: "sign-pare-siga", label: "Pare/Siga", icon: ArrowRightLeft },
   { id: "sign-desvio", label: "Desvio", icon: RectangleHorizontal },
+  { id: "sign-info", label: "Info", icon: Square },
   { id: "cone", label: "Cone", icon: Cone },
   { id: "barrier", label: "Cavalete", icon: Baseline },
+  { id: "fence", label: "Cerquite", icon: Baseline },
+  { id: "tape", label: "Fita", icon: Minus },
+  { id: "light", label: "Sinaliz.", icon: Lightbulb },
+  { id: "truck", label: "Caminhão", icon: Truck },
+  { id: "backhoe", label: "Máquina", icon: Tractor },
+  { id: "trench", label: "Buraco", icon: Construction },
   { id: "worker", label: "Humano", icon: HelpCircle },
   { id: "arrow", label: "Seta", icon: MoveRight },
   { id: "label", label: "Texto", icon: Type },
@@ -70,12 +81,12 @@ export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiVie
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 p-2 bg-slate-100 shadow-inner z-10 border-b border-slate-200 justify-center">
+      <div className="flex overflow-x-auto gap-2 p-2 bg-slate-100 shadow-inner z-10 border-b border-slate-200 hide-scrollbar shrink-0">
         {TOOLS.map((t) => (
           <button 
             key={t.id} 
             onClick={() => setCurrentTool(t.id)}
-            className={`flex flex-col items-center flex-grow min-w-[50px] p-2 rounded-lg transition-colors ${currentTool === t.id ? "bg-blue-600 text-white shadow-md" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50 border border-slate-200"}`}
+            className={`flex flex-col items-center flex-shrink-0 min-w-[64px] p-2 rounded-lg transition-colors ${currentTool === t.id ? "bg-blue-600 text-white shadow-md" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50 border border-slate-200"}`}
           >
             <t.icon className="w-4 h-4 mb-1" />
             <span className="text-[9px] whitespace-nowrap font-medium tracking-tight uppercase">{t.label}</span>
