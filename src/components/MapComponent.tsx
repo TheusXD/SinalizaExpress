@@ -1,22 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
 import { LocateFixed, Loader2, Search, X } from "lucide-react";
 import type { LocationData } from "@/types";
-
-// Fix for default marker icon in Leaflet + Next.js
-const defaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  shadowSize: [41, 41]
-});
-L.Marker.prototype.options.icon = defaultIcon;
 
 interface MapComponentProps {
   location: LocationData | null;
@@ -89,40 +75,7 @@ function AddressSearch({ onSelect }: { onSelect: (loc: LocationData) => void }) 
   );
 }
 
-function LocationMarker({ location, onLocationSelect }: MapComponentProps) {
-  useMapEvents({
-    async click(e) {
-      const { lat, lng } = e.latlng;
-      onLocationSelect({ lat, lng, address: "Buscando endereço..." });
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-        const data = await res.json();
-        onLocationSelect({ lat, lng, address: data.display_name });
-      } catch (err) {
-        onLocationSelect({ lat, lng });
-      }
-    },
-  });
 
-  return location ? <Marker position={[location.lat, location.lng]} /> : null;
-}
-
-// MapFlyTo prevents interference with user's manual navigation
-function MapFlyTo({ location }: { location: LocationData | null }) {
-  const map = useMap();
-  const prevTarget = useRef<string | null>(null);
-  
-  useEffect(() => {
-    if (location) {
-      const currentTarget = `${location.lat.toFixed(5)},${location.lng.toFixed(5)}`;
-      if (prevTarget.current !== currentTarget) {
-        map.flyTo([location.lat, location.lng], 16, { duration: 1.5 });
-        prevTarget.current = currentTarget;
-      }
-    }
-  }, [location, map]);
-  return null;
-}
 
 export default function MapComponent({ location, onLocationSelect }: MapComponentProps) {
   const [isLocating, setIsLocating] = useState(false);
@@ -157,25 +110,17 @@ export default function MapComponent({ location, onLocationSelect }: MapComponen
     );
   };
 
-  const initialCenter: [number, number] = [-23.550520, -46.633308]; // Default to São Paulo if no location exists
-
   return (
     <div className="flex flex-col h-full w-full">
       <AddressSearch onSelect={onLocationSelect} />
       
       <div className="relative w-full h-[350px] rounded-lg overflow-hidden shadow-md flex-grow z-0">
-        <MapContainer 
-          center={location ? [location.lat, location.lng] : initialCenter} 
-          zoom={15} 
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <LocationMarker location={location} onLocationSelect={onLocationSelect} />
-          <MapFlyTo location={location} />
-        </MapContainer>
+        <iframe 
+          src="https://gis.iguasa.com.br/portal/apps/webappviewer/index.html?id=0d16863d15fa4d0ba5473f0299accdd7"
+          className="w-full h-full border-0"
+          title="Mapa Iguá Saneamento"
+          allow="geolocation"
+        />
 
         <button
           onClick={handleUseMyLocation}
