@@ -16,7 +16,7 @@ export default function SummaryView({ state, onUpdateResponsible, onSaveHistory,
   const [saveError, setSaveError] = useState<string | null>(null);
   const selectedItems = checklist.items.filter(item => item.quantity > 0);
 
-  const generateWhatsAppLink = () => {
+  const generateText = () => {
     let text = `*Planejamento de Sinalização de Obra*\n`;
     text += `Data: ${new Date(state.date).toLocaleDateString("pt-BR")}\n`;
     if (responsible) {
@@ -49,8 +49,36 @@ export default function SummaryView({ state, onUpdateResponsible, onSaveHistory,
       text += `\n📐 Croqui de sinalização em anexo.\n`;
     }
 
+    return text;
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const text = generateText();
+
+    // Tentar compartilhamento nativo com imagem (Web Share API)
+    if (state.croqui && navigator.share) {
+      try {
+        const res = await fetch(state.croqui);
+        const blob = await res.blob();
+        const file = new File([blob], `croqui-${Date.now()}.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'SinalizaExpress - Planejamento',
+            text: text,
+            files: [file]
+          });
+          return; // Sucesso no compartilhamento nativo
+        }
+      } catch (err) {
+        console.error("Erro ao compartilhar nativamente com imagem:", err);
+      }
+    }
+
+    // Fallback: Apenas texto via WhatsApp
     const encodedText = encodeURIComponent(text);
-    return `https://wa.me/?text=${encodedText}`;
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
 
   return (
@@ -138,15 +166,13 @@ export default function SummaryView({ state, onUpdateResponsible, onSaveHistory,
       </div>
 
       <div className="flex flex-col gap-3 mt-auto">
-        <a
-          href={generateWhatsAppLink()}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleShare}
           className="w-full py-4 bg-green-500 hover:bg-green-600 shadow-md text-white font-bold rounded-xl text-lg flex justify-center items-center gap-2 transition"
         >
           <Share2 className="w-6 h-6" />
           Compartilhar 
-        </a>
+        </button>
 
         <div className="flex gap-2 w-full mt-2">
           {!saved ? (
