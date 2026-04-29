@@ -34,13 +34,13 @@ export default function InventoryManager({
   onBack
 }: InventoryManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editStock, setEditStock] = useState<number>(0);
+  const [editStock, setEditStock] = useState<number | "">(0);
   
   // For new items
   const [newItemType, setNewItemType] = useState<"standard" | "custom">("standard");
   const [selectedStdId, setSelectedStdId] = useState(defaultChecklistItems[0].id);
   const [customName, setCustomName] = useState("");
-  const [newStock, setNewStock] = useState<number>(1);
+  const [newStock, setNewStock] = useState<number | "">(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableStandardItems = defaultChecklistItems.filter(
@@ -48,11 +48,12 @@ export default function InventoryManager({
   );
 
   const handleSaveEdit = async (item: InventoryItem) => {
-    if (editStock < item.inUse) {
+    const parsedStock = typeof editStock === "number" ? editStock : parseInt(editStock as string) || 0;
+    if (parsedStock < item.inUse) {
       alert(`O estoque total não pode ser menor que a quantidade já em uso (${item.inUse}).`);
       return;
     }
-    await onUpsert(item.id, item.name, editStock);
+    await onUpsert(item.id, item.name, parsedStock);
     setEditingId(null);
   };
 
@@ -67,7 +68,8 @@ export default function InventoryManager({
   };
 
   const handleAddItem = async () => {
-    if (newStock < 1) {
+    const parsedStock = typeof newStock === "number" ? newStock : parseInt(newStock as string) || 0;
+    if (parsedStock < 1) {
       alert("A quantidade em estoque deve ser pelo menos 1.");
       return;
     }
@@ -76,7 +78,7 @@ export default function InventoryManager({
     if (newItemType === "standard") {
       const stdItem = defaultChecklistItems.find(i => i.id === selectedStdId);
       if (stdItem) {
-        await onUpsert(stdItem.id, stdItem.name, newStock);
+        await onUpsert(stdItem.id, stdItem.name, parsedStock);
       }
     } else {
       if (!customName.trim()) {
@@ -96,7 +98,7 @@ export default function InventoryManager({
       // Or we can just use `custom-${Date.now()}` so that it matches `custom-*` pattern.
       // Wait, Checklist custom items have their own IDs. It might be better to just generate `custom-${Date.now()}` here.
       const newId = `custom-${Date.now()}`;
-      await onUpsert(newId, customName.trim(), newStock);
+      await onUpsert(newId, customName.trim(), parsedStock);
       setCustomName("");
     }
     
@@ -142,8 +144,8 @@ export default function InventoryManager({
                       <input 
                         type="number"
                         min={item.inUse}
-                        value={editStock}
-                        onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
+                        value={editStock === "" ? "" : editStock}
+                        onChange={(e) => setEditStock(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                         className="w-24 p-2 border border-slate-300 rounded-lg text-center"
                       />
                     </div>
@@ -248,8 +250,8 @@ export default function InventoryManager({
             <input 
               type="number"
               min="1"
-              value={newStock}
-              onChange={(e) => setNewStock(parseInt(e.target.value) || 1)}
+              value={newStock === "" ? "" : newStock}
+              onChange={(e) => setNewStock(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
               className="w-full p-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
