@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Group, Rect, RegularPolygon, Circle, Arrow, Text, Transformer, Line, Image as KonvaImage } from "react-konva";
 import type Konva from "konva";
+import type { CroquiElement } from "@/types";
 
 export type ElementType =
   | "road-h" | "road-v"
@@ -12,20 +13,8 @@ export type ElementType =
   | "truck" | "backhoe" | "trench"
   | "arrow" | "label";
 
-export interface CanvasElement {
-  id: string;
-  type: ElementType;
-  x: number;
-  y: number;
-  points?: number[]; // [x1,y1,x2,y2]
-  text?: string;
-  rotation?: number;
-  scaleX?: number;
-  scaleY?: number;
-}
-
 export interface CroquiEditorProps {
-  initialDataUrl?: string;
+  initialElements?: CroquiElement[];
   stageRef: React.RefObject<Konva.Stage | null>;
   tool: ElementType | "select";
   editorActionsRef: React.MutableRefObject<{
@@ -33,19 +22,19 @@ export interface CroquiEditorProps {
     clear: () => void;
     deleteSelected: () => void;
     clearSelection: () => void;
+    getElements: () => CroquiElement[];
   } | null>;
 }
 
-export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorActionsRef }: CroquiEditorProps) {
-  const [elements, setElements] = useState<CanvasElement[]>([]);
+export default function CroquiEditor({ initialElements, stageRef, tool, editorActionsRef }: CroquiEditorProps) {
+  const [elements, setElements] = useState<CroquiElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
   
-  const historyRef = useRef<CanvasElement[][]>([]);
+  const historyRef = useRef<CroquiElement[][]>([]);
   const transformerRef = useRef<Konva.Transformer>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
 
   // Resize Observer
   useEffect(() => {
@@ -66,14 +55,12 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
     return () => observer.disconnect();
   }, []);
 
-  // Background Image Restoration
+  // Restore initial elements if provided
   useEffect(() => {
-    if (initialDataUrl && !bgImage) {
-      const img = new window.Image();
-      img.src = initialDataUrl;
-      img.onload = () => setBgImage(img);
+    if (initialElements && initialElements.length > 0) {
+      setElements(initialElements);
     }
-  }, [initialDataUrl, bgImage]);
+  }, [initialElements]);
 
   // Hook up Transformer
   useEffect(() => {
@@ -87,7 +74,7 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
     if (node) transformerRef.current?.nodes([node]);
   }, [selectedId, elements]);
 
-  // Expose Editor Actions
+  // Expose Editor Actions to parent component
   useEffect(() => {
     editorActionsRef.current = {
       undo: () => {
@@ -101,7 +88,6 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
         historyRef.current.push(structuredClone(elements));
         setElements([]);
         setSelectedId(null);
-        setBgImage(null);
       },
       deleteSelected: () => {
         if (selectedId) {
@@ -116,13 +102,14 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
           transformerRef.current.nodes([]);
           transformerRef.current.getLayer()?.batchDraw();
         }
-      }
+      },
+      getElements: () => elements,
     };
   }, [elements, selectedId, editorActionsRef]);
 
-  // Stage Mouse Down
+  // Stage Mouse Down Handler for placing objects
   const handleStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
-    const clickedOnEmpty = e.target === e.target.getStage() || e.target.hasName("bg-image");
+    const clickedOnEmpty = e.target === e.target.getStage();
     
     if (clickedOnEmpty) {
       setSelectedId(null);
@@ -132,19 +119,49 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
       const pos = stage.getPointerPosition();
       if (!pos) return;
 
+      const xPercent = pos.x / size.width;
+      const yPercent = pos.y / size.height;
+
       if (tool === "arrow") {
         if (!arrowStart) {
           setArrowStart(pos);
         } else {
           historyRef.current.push(structuredClone(elements));
-          setElements([...elements, { id: `el-${crypto.randomUUID()}`, type: "arrow", x: 0, y: 0, points: [arrowStart.x, arrowStart.y, pos.x, pos.y] }]);
+          setElements([
+            ...elements,
+            {
+              id: `el-${crypto.randomUUID()}`,
+              type: "arrow",
+              x: 0,
+              y: 0,
+              xPercent: 0,
+              yPercent: 0,
+              points: [
+                arrowStart.x / size.width,
+                arrowStart.y / size.height,
+                pos.x / size.width,
+                pos.y / size.height
+              ]
+            }
+          ]);
           setArrowStart(null);
         }
       } else if (tool === "label") {
         const text = window.prompt("Texto da etiqueta:");
         if (text) {
           historyRef.current.push(structuredClone(elements));
-          setElements([...elements, { id: `el-${crypto.randomUUID()}`, type: "label", x: pos.x, y: pos.y, text }]);
+          setElements([
+            ...elements,
+            {
+              id: `el-${crypto.randomUUID()}`,
+              type: "label",
+              x: pos.x,
+              y: pos.y,
+              xPercent,
+              yPercent,
+              text
+            }
+          ]);
         }
       } else if (tool !== "select") {
         historyRef.current.push(structuredClone(elements));
@@ -160,7 +177,20 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
         else if (tool === "trench") { halfW = 25; halfH = 15; }
         else if (tool === "sign-info") { halfW = 20; halfH = 15; }
 
-        setElements([...elements, { id: `el-${crypto.randomUUID()}`, type: tool as ElementType, x: pos.x - halfW, y: pos.y - halfH }]);
+        const adjustedX = pos.x - halfW;
+        const adjustedY = pos.y - halfH;
+
+        setElements([
+          ...elements,
+          {
+            id: `el-${crypto.randomUUID()}`,
+            type: tool as any,
+            x: adjustedX,
+            y: adjustedY,
+            xPercent: adjustedX / size.width,
+            yPercent: adjustedY / size.height
+          }
+        ]);
       }
     }
   };
@@ -173,7 +203,13 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
     const id = e.target.id();
     setElements(prev => prev.map(el => {
       if (el.id === id) {
-        return { ...el, x: e.target.x(), y: e.target.y() };
+        return {
+          ...el,
+          x: e.target.x(),
+          y: e.target.y(),
+          xPercent: e.target.x() / size.width,
+          yPercent: e.target.y() / size.height
+        };
       }
       return el;
     }));
@@ -187,6 +223,8 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
           ...el,
           x: e.target.x(),
           y: e.target.y(),
+          xPercent: e.target.x() / size.width,
+          yPercent: e.target.y() / size.height,
           rotation: e.target.rotation(),
           scaleX: e.target.scaleX(),
           scaleY: e.target.scaleY()
@@ -208,20 +246,25 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
         onTouchStart={handleStageMouseDown}
       >
         <Layer>
-          {bgImage && <KonvaImage image={bgImage} width={size.width} height={size.height} name="bg-image" />}
-          
-          {/* Arrow preview */}
+          {/* Arrow preview point */}
           {tool === "arrow" && arrowStart && (
             <Circle x={arrowStart.x} y={arrowStart.y} radius={5} fill="#3b82f6" />
           )}
 
           {elements.map((el) => {
+            const absX = (el.xPercent ?? 0.5) * size.width;
+            const absY = (el.yPercent ?? 0.5) * size.height;
+
             if (el.type === "arrow") {
+              const absPoints = el.points
+                ? el.points.map((p, idx) => idx % 2 === 0 ? p * size.width : p * size.height)
+                : [];
+
               return (
                 <Arrow
                   key={el.id}
                   id={el.id}
-                  points={el.points || []}
+                  points={absPoints}
                   stroke={selectedId === el.id ? "#6366f1" : "#374151"}
                   fill={selectedId === el.id ? "#6366f1" : "#374151"}
                   strokeWidth={2.5}
@@ -230,8 +273,26 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
                   draggable
                   onDragStart={handleDragStart}
                   onDragEnd={(e) => {
-                     const target = e.target;
-                     setElements(prev => prev.map(item => item.id === el.id ? { ...item, x: target.x(), y: target.y() } : item));
+                    const target = e.target;
+                    // For Arrow, we update the points array relative positions when dragged
+                    // In react-konva, dragging shifts x/y offset, so we need to calculate new absolute points
+                    const currentPoints = el.points || [];
+                    const dx = target.x();
+                    const dy = target.y();
+                    
+                    const newPoints = currentPoints.map((p, idx) => {
+                      if (idx % 2 === 0) {
+                        return (p * size.width + dx) / size.width;
+                      } else {
+                        return (p * size.height + dy) / size.height;
+                      }
+                    });
+                    
+                    // Reset stage relative offset of Konva node and update the state points
+                    target.x(0);
+                    target.y(0);
+
+                    setElements(prev => prev.map(item => item.id === el.id ? { ...item, points: newPoints } : item));
                   }}
                   onClick={() => setSelectedId(el.id)}
                   onTap={() => setSelectedId(el.id)}
@@ -244,8 +305,8 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
                 <Text
                   key={el.id}
                   id={el.id}
-                  x={el.x}
-                  y={el.y}
+                  x={absX}
+                  y={absY}
                   text={el.text}
                   fontSize={14}
                   fontStyle="bold"
@@ -263,8 +324,8 @@ export default function CroquiEditor({ initialDataUrl, stageRef, tool, editorAct
               <Group
                 key={el.id}
                 id={el.id}
-                x={el.x}
-                y={el.y}
+                x={absX}
+                y={absY}
                 rotation={el.rotation || 0}
                 scaleX={el.scaleX || 1}
                 scaleY={el.scaleY || 1}

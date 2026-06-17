@@ -4,7 +4,7 @@ import type { InventoryItem } from "@/types";
 
 interface InventoryManagerProps {
   inventory: InventoryItem[];
-  onUpsert: (id: string, name: string, totalStock: number) => Promise<void>;
+  onUpsert: (id: string, name: string, totalStock: number, minStock?: number) => Promise<void>;
   onRemove: (id: string) => Promise<boolean>;
   onBack: () => void;
 }
@@ -35,12 +35,14 @@ export default function InventoryManager({
 }: InventoryManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editStock, setEditStock] = useState<number | "">(0);
+  const [editMinStock, setEditMinStock] = useState<number | "">(0);
   
   // For new items
   const [newItemType, setNewItemType] = useState<"standard" | "custom">("standard");
   const [selectedStdId, setSelectedStdId] = useState(defaultChecklistItems[0].id);
   const [customName, setCustomName] = useState("");
   const [newStock, setNewStock] = useState<number | "">(1);
+  const [newMinStock, setNewMinStock] = useState<number | "">(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableStandardItems = defaultChecklistItems.filter(
@@ -49,11 +51,21 @@ export default function InventoryManager({
 
   const handleSaveEdit = async (item: InventoryItem) => {
     const parsedStock = typeof editStock === "number" ? editStock : parseInt(editStock as string) || 0;
+    const parsedMinStock = typeof editMinStock === "number" ? editMinStock : parseInt(editMinStock as string) || 0;
+    
+    if (parsedStock < 0) {
+      alert("O estoque total não pode ser negativo.");
+      return;
+    }
+    if (parsedMinStock < 0) {
+      alert("O alerta de estoque mínimo não pode ser negativo.");
+      return;
+    }
     if (parsedStock < item.inUse) {
       alert(`O estoque total não pode ser menor que a quantidade já em uso (${item.inUse}).`);
       return;
     }
-    await onUpsert(item.id, item.name, parsedStock);
+    await onUpsert(item.id, item.name, parsedStock, parsedMinStock);
     setEditingId(null);
   };
 
@@ -69,8 +81,14 @@ export default function InventoryManager({
 
   const handleAddItem = async () => {
     const parsedStock = typeof newStock === "number" ? newStock : parseInt(newStock as string) || 0;
+    const parsedMinStock = typeof newMinStock === "number" ? newMinStock : parseInt(newMinStock as string) || 0;
+    
     if (parsedStock < 1) {
       alert("A quantidade em estoque deve ser pelo menos 1.");
+      return;
+    }
+    if (parsedMinStock < 0) {
+      alert("O estoque mínimo não pode ser negativo.");
       return;
     }
 
@@ -78,7 +96,7 @@ export default function InventoryManager({
     if (newItemType === "standard") {
       const stdItem = defaultChecklistItems.find(i => i.id === selectedStdId);
       if (stdItem) {
-        await onUpsert(stdItem.id, stdItem.name, parsedStock);
+        await onUpsert(stdItem.id, stdItem.name, parsedStock, parsedMinStock);
       }
     } else {
       if (!customName.trim()) {
@@ -86,23 +104,13 @@ export default function InventoryManager({
         setIsSubmitting(false);
         return;
       }
-      // Provide a stable predictable id format for custom inventory
-      // We'll use a prefix to ensure it doesn't collide but it must match the checklist id
-      // Since checklist custom items generate random UUIDs, if the user creates here, it's just a generic inventory entry.
-      // But wait: "Para sincronizar um item customizado, use o mesmo nome" means we must use a predictable ID or match by name?
-      // "Se o usuário deletar um item do checklist customizado..."
-      // Let's create an ID based on name or random UUID. Wait, the prompt says:
-      // "Para sincronizar um item customizado, use o mesmo nome." 
-      // If we create here with random ID, it won't link automatically unless the user types the same name, but in Checklist it checks by ID.
-      // Actually, if they create a custom item here, we generate an ID like `inv-custom-${Date.now()}`.
-      // Or we can just use `custom-${Date.now()}` so that it matches `custom-*` pattern.
-      // Wait, Checklist custom items have their own IDs. It might be better to just generate `custom-${Date.now()}` here.
       const newId = `custom-${Date.now()}`;
-      await onUpsert(newId, customName.trim(), parsedStock);
+      await onUpsert(newId, customName.trim(), parsedStock, parsedMinStock);
       setCustomName("");
     }
     
     setNewStock(1);
+    setNewMinStock(0);
     setIsSubmitting(false);
   };
 
@@ -130,26 +138,80 @@ export default function InventoryManager({
         ) : (
           inventory.map((item) => {
             const available = item.totalStock - item.inUse;
-            const badgeColor = available > 3 ? "bg-emerald-100 text-emerald-800" 
-                             : available > 0 ? "bg-amber-100 text-amber-800" 
-                             : "bg-rose-100 text-rose-800";
+            const isLowStock = item.minStock !== undefined && item.minStock > 0 && available <= item.minStock;
+            const badgeColor = isLowStock
+              ? "bg-rose-100 text-rose-800 animate-pulse border border-rose-300"
+              : available > 3 ? "bg-emerald-100 text-emerald-800" 
+              : available > 0 ? "bg-amber-100 text-amber-800" 
+              : "bg-rose-100 text-rose-800";
             
             return (
               <div key={item.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 relative overflow-hidden group">
                 {editingId === item.id ? (
                   <div className="flex flex-col gap-3">
                     <p className="font-semibold text-slate-700">{item.name}</p>
-                    <div className="flex items-center gap-2">
+                    
+                    <div className="flex items-center justify-between gap-2">
                       <label className="text-sm font-medium text-slate-600">Estoque Total:</label>
-                      <input 
-                        type="number"
-                        min={item.inUse}
-                        value={editStock === "" ? "" : editStock}
-                        onChange={(e) => setEditStock(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
-                        className="w-24 p-2 border border-slate-300 rounded-lg text-center"
-                      />
+                      <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setEditStock(prev => Math.max(item.inUse, (typeof prev === "number" ? prev : 0) - 1))}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="number"
+                          min={item.inUse}
+                          value={editStock === "" ? "" : editStock}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? "" : parseInt(e.target.value);
+                            setEditStock(val === "" ? "" : Math.max(item.inUse, val));
+                          }}
+                          className="w-16 p-1 text-center font-bold focus:outline-none border-none text-slate-900 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEditStock(prev => (typeof prev === "number" ? prev : 0) + 1)}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 justify-end mt-2">
+
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="text-sm font-medium text-slate-600">Estoque Mínimo:</label>
+                      <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setEditMinStock(prev => Math.max(0, (typeof prev === "number" ? prev : 0) - 1))}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="number"
+                          min="0"
+                          value={editMinStock === "" ? "" : editMinStock}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? "" : parseInt(e.target.value);
+                            setEditMinStock(val === "" ? "" : Math.max(0, val));
+                          }}
+                          className="w-16 p-1 text-center font-bold focus:outline-none border-none text-slate-900 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEditMinStock(prev => (typeof prev === "number" ? prev : 0) + 1)}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end mt-1">
                       <button onClick={() => setEditingId(null)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
                         <X className="w-5 h-5" />
                       </button>
@@ -169,11 +231,16 @@ export default function InventoryManager({
                     
                     <p className="text-sm text-slate-500 font-medium">
                       Total: {item.totalStock} | Em campo: <span className={item.inUse > 0 ? "text-blue-600" : ""}>{item.inUse}</span>
+                      {item.minStock !== undefined && item.minStock > 0 && (
+                        <span className={`ml-2 text-xs font-semibold px-1.5 py-0.5 rounded ${isLowStock ? "bg-rose-100 text-rose-800 font-bold" : "bg-slate-100 text-slate-600"}`}>
+                          Min: {item.minStock}
+                        </span>
+                      )}
                     </p>
 
                     <div className="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => { setEditingId(item.id); setEditStock(item.totalStock); }}
+                        onClick={() => { setEditingId(item.id); setEditStock(item.totalStock); setEditMinStock(item.minStock || 0); }}
                         className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
                         title="Editar estoque"
                       >
@@ -245,15 +312,64 @@ export default function InventoryManager({
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade Total</label>
-            <input 
-              type="number"
-              min="1"
-              value={newStock === "" ? "" : newStock}
-              onChange={(e) => setNewStock(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
-              className="w-full p-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+          <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+            <label className="text-sm font-semibold text-slate-700">Quantidade Total:</label>
+            <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={() => setNewStock(prev => Math.max(1, (typeof prev === "number" ? prev : 1) - 1))}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600 focus:outline-none"
+              >
+                -
+              </button>
+              <input 
+                type="number"
+                min="1"
+                value={newStock === "" ? "" : newStock}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? "" : parseInt(e.target.value);
+                  setNewStock(val === "" ? "" : Math.max(1, val));
+                }}
+                className="w-16 p-1.5 text-center font-bold focus:outline-none border-none text-slate-900 bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setNewStock(prev => (typeof prev === "number" ? prev : 1) + 1)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-slate-100 pt-3 mb-2">
+            <label className="text-sm font-semibold text-slate-700">Alerta de Estoque Mínimo:</label>
+            <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={() => setNewMinStock(prev => Math.max(0, (typeof prev === "number" ? prev : 0) - 1))}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600 focus:outline-none"
+              >
+                -
+              </button>
+              <input 
+                type="number"
+                min="0"
+                value={newMinStock === "" ? "" : newMinStock}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? "" : parseInt(e.target.value);
+                  setNewMinStock(val === "" ? "" : Math.max(0, val));
+                }}
+                className="w-16 p-1.5 text-center font-bold focus:outline-none border-none text-slate-900 bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setNewMinStock(prev => (typeof prev === "number" ? prev : 0) + 1)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold transition text-slate-600"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <button

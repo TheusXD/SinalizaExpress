@@ -80,9 +80,17 @@ export default function ChecklistView({
                   )}
                 </span>
                 {isControlled && (
-                  <p className="text-xs text-slate-500 mt-1 font-medium">
-                    Disponível: {available}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Disponível: {available}
+                    </span>
+                    {invItem.minStock !== undefined && invItem.minStock > 0 && available <= invItem.minStock && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] bg-rose-50 border border-rose-200 text-rose-700 font-bold px-1.5 py-0.5 rounded animate-pulse">
+                        <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                        Estoque Crítico (Min: {invItem.minStock})
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 

@@ -1,0 +1,101 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js (App Router, next-pwa)
+  - React
+  - TailwindCSS
+  - react-konva (Konva)
+  - react-leaflet (Leaflet)
+  - localforage
+  - lucide-react
+routes:
+  - path: /
+    file: src/app/page.tsx
+    auth_required: false
+    description: Home page containing all main screens of SinalizaExpress (Map, Checklist, Croqui, Summary, History, Inventory) via stages.
+features:
+  - name: Location Selection (Map)
+    description: Allow user to select the work location by dragging/tapping on the map, using GPS, or typing an address search.
+    files:
+      - src/components/MapView.tsx
+      - src/components/MapComponent.tsx
+    entry_route: /
+    user_interactions:
+      - Tapping/dragging map to place pin
+      - Clicking Usar minha localizacao button to use GPS
+      - Typing address in search bar and selecting result from Nominatim list
+      - Clicking Avancar para Checklist to proceed
+    api_calls:
+      - method: GET
+        endpoint: https://nominatim.openstreetmap.org/search
+      - method: GET
+        endpoint: https://nominatim.openstreetmap.org/reverse
+    auth_required: false
+  - name: Signaling Checklist
+    description: Allow user to choose and quantify signaling items needed for the work, validating with inventory stock.
+    files:
+      - src/components/ChecklistView.tsx
+      - src/components/CustomSignsManager.tsx
+    entry_route: /
+    user_interactions:
+      - Clicking + or - buttons to modify quantities
+      - Clicking Settings icon to manage custom signs
+      - Typing new custom sign name and description, then clicking Adicionar Placa
+      - Typing observations in text area
+      - Clicking Resumo to proceed or Voltar to go to map
+    api_calls: []
+    auth_required: false
+  - name: Croqui Drawing Board
+    description: Interactive canvas using react-konva where users can drag, rotate, scale, and place roadways, signs, vehicles, and text.
+    files:
+      - src/components/CroquiView.tsx
+      - src/components/CroquiEditor.tsx
+    entry_route: /
+    user_interactions:
+      - Selecting a tool from the top toolbar
+      - Tapping/clicking on the canvas to place selected elements
+      - Dragging placed elements to move them
+      - Rotating or scaling elements using the Transformer anchor handles
+      - Clicking Undo to revert last placement
+      - Clicking Trash icon to clear the board
+      - Clicking Excluir button to remove selected element
+      - Clicking Salvar e Continuar to export canvas to PNG base64 and proceed
+    api_calls: []
+    auth_required: false
+  - name: Work Summary & Sharing
+    description: Shows a summary of the work and allows sharing via WhatsApp or Web Share API.
+    files:
+      - src/components/SummaryView.tsx
+    entry_route: /
+    user_interactions:
+      - Inputting responsible person name
+      - Clicking Salvar no Historico button to commit inventory changes and log the work
+      - Clicking Compartilhar button to share via Web Share API or WhatsApp Web/App
+      - Clicking Nova Obra to clear state and restart
+    api_calls: []
+    auth_required: false
+  - name: Inventory Management
+    description: Manage stock of signaling items, total stock, and items in use in field.
+    files:
+      - src/components/InventoryManager.tsx
+    entry_route: /
+    user_interactions:
+      - Accessing inventory view via package icon in header
+      - Editing total stock quantity for items
+      - Adding new standard or custom items to inventory
+      - Removing items from inventory (if not in use)
+    api_calls: []
+    auth_required: false
+  - name: History & Returns
+    description: Log of all saved signalization plans, showing details and allowing return of items back to stock.
+    files:
+      - src/components/HistoryView.tsx
+    entry_route: /
+    user_interactions:
+      - Accessing history view via clipboard icon in header
+      - Clicking Devolver sinalizacao to return all items of that work back to available stock
+      - Clicking Trash icon to delete a plan from history log
+    api_calls: []
+    auth_required: false
+known_limitations: []

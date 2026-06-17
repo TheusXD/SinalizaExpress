@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useAppStore } from "@/hooks/useAppStore";
-import MapView from "@/components/MapView";
+import MapView, { defaultNetworkChecklist } from "@/components/MapView";
 import ChecklistView from "@/components/ChecklistView";
 import CroquiView from "@/components/CroquiView";
 import SummaryView from "@/components/SummaryView";
 import HistoryView from "@/components/HistoryView";
 import InventoryManager from "@/components/InventoryManager";
-import { ClipboardList, Package } from "lucide-react";
+import DashboardView from "@/components/DashboardView";
+import { ClipboardList, Package, LayoutDashboard } from "lucide-react";
 
-type ViewStage = "map" | "checklist" | "croqui" | "summary" | "history" | "inventory";
+type ViewStage = "map" | "checklist" | "croqui" | "summary" | "history" | "inventory" | "dashboard";
 
 export default function Home() {
   const { state, history, inventory, isLoaded, actions } = useAppStore();
@@ -27,13 +28,20 @@ export default function Home() {
   return (
     <main className="h-[100dvh] w-full max-w-md mx-auto bg-white shadow-xl overflow-y-auto overflow-x-hidden flex flex-col relative text-slate-900">
       
-      {stage !== "history" && stage !== "inventory" && (
+      {stage !== "history" && stage !== "inventory" && stage !== "dashboard" && (
         <header className="bg-blue-600 text-white p-4 shadow-sm z-10 relative shrink-0">
           <div className="flex justify-between items-center mb-1">
             <h1 className="text-xl font-black tracking-wide">
               Sinaliza<span className="text-blue-200">Express</span>
             </h1>
             <div className="flex items-center gap-1">
+              <button
+                 onClick={() => setStage("dashboard")}
+                 className="p-2 rounded-full hover:bg-blue-700 transition"
+                 title="Painel e Modelos"
+              >
+                <LayoutDashboard className="w-6 h-6" />
+              </button>
               <button
                  onClick={() => setStage("inventory")}
                  className="p-2 rounded-full hover:bg-blue-700 transition"
@@ -75,6 +83,13 @@ export default function Home() {
             location={state.location}
             onLocationSelect={actions.setLocation}
             onNext={() => setStage("checklist")}
+            networkNotes={state.location?.networkNotes || ""}
+            networkChecklist={state.location?.networkChecklist || defaultNetworkChecklist}
+            photos={state.photos || []}
+            onSetNetworkNotes={actions.setNetworkNotes}
+            onSetNetworkChecklist={actions.setNetworkChecklist}
+            onAddPhoto={actions.addPhoto}
+            onRemovePhoto={actions.removePhoto}
           />
         )}
 
@@ -96,6 +111,7 @@ export default function Home() {
         {stage === "croqui" && (
           <CroquiView
             croqui={state.croqui}
+            croquiElements={state.croquiElements}
             onSave={actions.setCroqui}
             onNext={() => setStage("summary")}
             onBack={() => setStage("checklist")}
@@ -105,6 +121,7 @@ export default function Home() {
         {stage === "summary" && (
           <SummaryView
             state={state}
+            history={history}
             onUpdateResponsible={actions.setResponsible}
             onSaveHistory={actions.saveToHistory}
             onReset={() => { actions.clearState(); setStage("map"); }}
@@ -115,8 +132,12 @@ export default function Home() {
         {stage === "history" && (
           <HistoryView
             history={history}
+            inventory={inventory}
+            customSigns={state.customSigns}
             onRemove={actions.removeFromHistory}
             onReturnInventory={actions.returnInventory}
+            onImportBackup={actions.importDataBackup}
+            onSetWorkStatus={actions.setWorkStatus}
             onBack={() => setStage("map")}
           />
         )}
@@ -126,6 +147,22 @@ export default function Home() {
             inventory={inventory}
             onUpsert={actions.upsertInventoryItem}
             onRemove={actions.removeInventoryItem}
+            onBack={() => setStage("map")}
+          />
+        )}
+
+        {stage === "dashboard" && (
+          <DashboardView
+            history={history}
+            inventory={inventory}
+            onSelectTemplate={(templateItems, templateElements) => {
+              actions.clearState();
+              actions.setCroqui(null, templateElements);
+              templateItems.forEach(item => {
+                actions.updateChecklistItem(item.id, item.quantity);
+              });
+              setStage("checklist");
+            }}
             onBack={() => setStage("map")}
           />
         )}

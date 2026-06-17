@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import type Konva from "konva";
 import type { ElementType } from "./CroquiEditor";
+import type { CroquiElement } from "@/types";
 import { ArrowLeft, Undo, Trash2, MousePointer2, MoveRight, HelpCircle, Triangle, Octagon, RectangleHorizontal, Cone, Baseline, Minus, MoreVertical, Type, ArrowRightLeft, Square, AlertTriangle, Lightbulb, Truck, Tractor, Construction } from "lucide-react";
 
 // Dynamic import with SSR disabled
@@ -18,7 +19,8 @@ const CroquiEditor = dynamic(() => import("./CroquiEditor"), {
 
 interface CroquiViewProps {
   croqui?: string;
-  onSave: (dataUrl: string | null) => void;
+  croquiElements?: CroquiElement[];
+  onSave: (dataUrl: string | null, elements: CroquiElement[]) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -48,9 +50,15 @@ const TOOLS: { id: ElementType | "select"; label: string; icon: any }[] = [
   { id: "label", label: "Texto", icon: Type },
 ];
 
-export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiViewProps) {
+export default function CroquiView({ croqui, croquiElements, onSave, onNext, onBack }: CroquiViewProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
-  const editorActionsRef = useRef<{ undo: () => void; clear: () => void; deleteSelected: () => void; clearSelection: () => void } | null>(null);
+  const editorActionsRef = useRef<{
+    undo: () => void;
+    clear: () => void;
+    deleteSelected: () => void;
+    clearSelection: () => void;
+    getElements: () => CroquiElement[];
+  } | null>(null);
   
   const [currentTool, setCurrentTool] = useState<ElementType | "select">("select");
 
@@ -128,7 +136,7 @@ export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiVie
         <div className="w-full h-full bg-white rounded-lg shadow-lg border-4 border-slate-300 relative overflow-hidden">
           <CroquiEditor 
             tool={currentTool} 
-            initialDataUrl={croqui} 
+            initialElements={croquiElements} 
             stageRef={stageRef} 
             editorActionsRef={editorActionsRef} 
           />
@@ -138,22 +146,23 @@ export default function CroquiView({ croqui, onSave, onNext, onBack }: CroquiVie
       <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
         <div className="flex gap-3">
           <button 
-            onClick={() => { onSave(null); onNext(); }} 
+            onClick={() => { onSave(null, []); onNext(); }} 
             className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition border border-slate-200"
           >
             Pular
           </button>
           <button 
             onClick={() => {
+              const elements = editorActionsRef.current?.getElements() || [];
               if (stageRef.current) {
                 editorActionsRef.current?.clearSelection();
                 setTimeout(() => {
                   const uri = stageRef.current?.toDataURL({ pixelRatio: 2 }) || null;
-                  onSave(uri);
+                  onSave(uri, elements);
                   onNext();
                 }, 50);
               } else {
-                onSave(null);
+                onSave(null, elements);
                 onNext();
               }
             }} 

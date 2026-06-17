@@ -1,0 +1,851 @@
+[
+  {
+    "id": "TC001",
+    "title": "Select a work location from the map and continue",
+    "description": "This verifies that a user can place a work location on the map, review the selected address, and proceed into checklist planning.",
+    "category": "Location Selection (Map)",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Place a location pin on the map"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected address is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Continue to the checklist"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the checklist is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Save a completed work summary to history",
+    "description": "Verifies that a completed work summary can be saved to history after entering the responsible person's name and that the work is recorded successfully.",
+    "category": "Work Summary & Sharing",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Enter the responsible person's name"
+      },
+      {
+        "type": "action",
+        "description": "Review the summary section"
+      },
+      {
+        "type": "action",
+        "description": "Save the work to history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a saved confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the work appears in history"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Search for an address and choose a suggested location",
+    "description": "This verifies that a user can search for an address, select a suggested result, and proceed with the chosen work location.",
+    "category": "Location Selection (Map)",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Search for an address"
+      },
+      {
+        "type": "action",
+        "description": "Select a suggested search result"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected address is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Continue to the checklist"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the checklist is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Use device location to set the work site",
+    "description": "This verifies that a user can use device location to populate the work site and continue to checklist planning.",
+    "category": "Location Selection (Map)",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Use the device location"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected address is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Continue to the checklist"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the checklist is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Review the summary and save the plan to history",
+    "description": "This verifies that a user can reach the summary, enter the responsible name, save the work, and see it recorded in history.",
+    "category": "Summary and History",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the planning stages until the summary is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the responsible person name"
+      },
+      {
+        "type": "action",
+        "description": "Save the work to history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a save confirmation is visible"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved work appears in history"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Return signage from a saved work to stock",
+    "description": "Verifies that returning signage from a saved job updates available stock after the user confirms the return action in history.",
+    "category": "History & Returns",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Open a saved work plan"
+      },
+      {
+        "type": "action",
+        "description": "Return the signage from the work"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the returned stock update is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the work remains recorded in history"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Draw, edit, undo, and save a croqui",
+    "description": "This verifies that a user can place a drawing element, move or resize it, undo the last action, and save the croqui to continue.",
+    "category": "Croqui Drawing Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Select a drawing tool"
+      },
+      {
+        "type": "action",
+        "description": "Place an element on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Move or resize the placed element"
+      },
+      {
+        "type": "action",
+        "description": "Undo the last action"
+      },
+      {
+        "type": "action",
+        "description": "Save and continue"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the next planning stage is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the croqui was saved"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Update inventory stock for an item",
+    "description": "Verifies that editing an item's total stock updates the inventory balance shown to the user.",
+    "category": "Inventory Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open inventory management"
+      },
+      {
+        "type": "action",
+        "description": "Edit the total stock quantity for an item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated stock balance is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the inventory list reflects the change"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Adjust required quantities and add operational notes",
+    "description": "This verifies that a user can update checklist quantities, enter notes, and continue to the summary with the plan preserved.",
+    "category": "Signaling Checklist",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Adjust an item quantity upward"
+      },
+      {
+        "type": "action",
+        "description": "Adjust another item quantity downward"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the operational notes field"
+      },
+      {
+        "type": "action",
+        "description": "Continue to the summary"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the summary is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated checklist items are reflected in the plan"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Share a completed work summary",
+    "description": "Verifies that a completed work summary can be shared after entering the responsible person's name and that a sharing option is presented successfully.",
+    "category": "Work Summary & Sharing",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Enter the responsible person's name"
+      },
+      {
+        "type": "action",
+        "description": "Review the summary section"
+      },
+      {
+        "type": "action",
+        "description": "Share the report using the available sharing option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a sharing confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report sharing interface is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Return signage items from a saved plan",
+    "description": "This verifies that a user can open a saved work plan from history and return its signage items back to available stock.",
+    "category": "Summary and History",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the planning stages until the work is saved"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Open a saved work plan"
+      },
+      {
+        "type": "action",
+        "description": "Return the signage items from the saved plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the stock balance is updated"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the returned items are no longer marked as in use"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Create a custom sign and use it in the checklist",
+    "description": "This verifies that a user can add a custom sign, set its quantity in the checklist, and continue to the summary.",
+    "category": "Signaling Checklist",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open custom sign management"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the custom sign name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the custom sign description"
+      },
+      {
+        "type": "action",
+        "description": "Add the new custom sign"
+      },
+      {
+        "type": "action",
+        "description": "Adjust the custom sign quantity in the checklist"
+      },
+      {
+        "type": "action",
+        "description": "Continue to the summary"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the summary is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the custom sign is included in the plan"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Start a new job from the summary",
+    "description": "Verifies that starting a new job from the completed summary clears the current work and returns the user to a fresh planning state.",
+    "category": "Work Summary & Sharing",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Enter the responsible person's name"
+      },
+      {
+        "type": "action",
+        "description": "Review the summary section"
+      },
+      {
+        "type": "action",
+        "description": "Start a new job"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planning stage is reset"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify previous work details are cleared"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Rotate and delete a croqui element before saving",
+    "description": "This verifies that a user can place multiple elements, rotate one, delete it, and save the remaining layout.",
+    "category": "Croqui Drawing Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Select a drawing tool"
+      },
+      {
+        "type": "action",
+        "description": "Place several elements on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Rotate one element"
+      },
+      {
+        "type": "action",
+        "description": "Delete the selected element"
+      },
+      {
+        "type": "action",
+        "description": "Save and continue"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the next planning stage is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the croqui reflects the remaining elements"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Edit inventory items and verify stock balance",
+    "description": "This verifies that a user can update inventory totals and see the stock balance reflect the changes.",
+    "category": "Inventory Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open inventory"
+      },
+      {
+        "type": "action",
+        "description": "Edit an inventory item quantity"
+      },
+      {
+        "type": "action",
+        "description": "Add a new inventory item"
+      },
+      {
+        "type": "action",
+        "description": "Remove an unused inventory item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated stock balance is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the inventory list reflects the edits"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Add a new inventory item",
+    "description": "Verifies that a new standard or custom inventory item can be added and appears in the inventory list afterward.",
+    "category": "Inventory Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open inventory management"
+      },
+      {
+        "type": "action",
+        "description": "Add a new standard or custom item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new inventory item is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the inventory list includes the added item"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Share the completed work report",
+    "description": "This verifies that a user can save a completed plan and start the sharing flow from the summary.",
+    "category": "Summary and History",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the planning stages until the summary is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the responsible person name"
+      },
+      {
+        "type": "action",
+        "description": "Save the work to history"
+      },
+      {
+        "type": "action",
+        "description": "Share the report"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a sharing action is available or completed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the completed work remains available in the summary or history"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC018",
+    "title": "Open a saved work in history and review details",
+    "description": "Verifies that a saved work plan can be opened from history and its details are visible for review.",
+    "category": "History & Returns",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Open a saved work plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved work details are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected plan remains accessible in history"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC019",
+    "title": "Remove an unused inventory item",
+    "description": "Verifies that an inventory item not currently in use can be removed and no longer appears in the inventory list.",
+    "category": "Inventory Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open inventory management"
+      },
+      {
+        "type": "action",
+        "description": "Remove an item that is not in use"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the item is no longer displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the inventory list updates"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC020",
+    "title": "Open a saved work plan and review its details",
+    "description": "This verifies that a user can open a saved record from history and inspect the stored plan details.",
+    "category": "Summary and History",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the planning stages until a work plan is saved"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Open the saved work plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved work details are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the plan includes the recorded location, checklist, and croqui information"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC021",
+    "title": "Clear the croqui and start a new layout",
+    "description": "This verifies that a user can clear the drawing board after placing elements and continue with a fresh layout.",
+    "category": "Croqui Drawing Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Select a drawing tool"
+      },
+      {
+        "type": "action",
+        "description": "Place elements on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Clear the board"
+      },
+      {
+        "type": "action",
+        "description": "Start a new layout"
+      },
+      {
+        "type": "action",
+        "description": "Save and continue"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the next planning stage is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the croqui contains the new layout only"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC022",
+    "title": "Delete a saved history entry",
+    "description": "Verifies that a saved plan can be deleted from history and the list updates to remove it.",
+    "category": "History & Returns",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Delete a saved plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the history list updates"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the deleted plan is no longer displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC023",
+    "title": "Delete a history entry and confirm the list updates",
+    "description": "This verifies that a user can delete a saved history entry and see it removed from the list.",
+    "category": "Summary and History",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the planning stages until a work plan is saved"
+      },
+      {
+        "type": "action",
+        "description": "Open history"
+      },
+      {
+        "type": "action",
+        "description": "Delete a saved history entry"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the entry is removed from history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the history list updates"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC024",
+    "title": "Prevent invalid negative checklist quantities",
+    "description": "This verifies that a user cannot reduce a checklist item below zero and the quantity remains blocked or invalid.",
+    "category": "Signaling Checklist",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Reduce an item quantity until it reaches zero"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to reduce the same item quantity again"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the quantity cannot decrease below zero"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a quantity validation state is shown"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC025",
+    "title": "Keep an inventory item that is currently in use",
+    "description": "This verifies that a user cannot remove an inventory item that is already in use and the item remains in the inventory.",
+    "category": "Inventory Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Open inventory"
+      },
+      {
+        "type": "action",
+        "description": "Use an item in a planning flow"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to remove the item from inventory"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the item remains in inventory"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a removal validation state is shown"
+      }
+    ],
+    "priority": "Low"
+  }
+]
